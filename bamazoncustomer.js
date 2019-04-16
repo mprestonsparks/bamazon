@@ -8,8 +8,8 @@ let connection = mysql.createConnection({
     database: 'bamazon_db'
 });
 
-// itemIds = [];
-function getInfo() {
+
+function getOrderInfo() {
     connection.connect();
      var queryString = 'SELECT * FROM products';
      connection.query(queryString, function(err, rows, fields) {
@@ -21,10 +21,9 @@ function getInfo() {
         // console.log(itemIds);
         runInquirer(productIDs);
     });
-    connection.end();
+    
+    // connection.end();
 };
-
-// console.log(itemIds.length);
 
 
 function runInquirer(productIDs) {
@@ -34,15 +33,32 @@ inquirer
         type: "list",
         choices: productIDs,
         name: "item_IDs",
-        message: "Select a query type"
+        message: "Select an ItemID..."
+    },
+    {
+        type: "input",
+        name: "order_quantity",
+        message: "Enter quantity to order..."
     }
 ])
 .then((answers) => {
     itemID = answers.item_IDs;
-    console.log(productIDs);
+    orderQuantity = parseInt(answers.order_quantity);
     console.log("Selected ItemID: " + itemID);
-
+    console.log("Quantity Ordered: " + orderQuantity);
+    checkInventoryBalance();
   });
+};
+
+
+function checkInventoryBalance() {
+    var inventoryBalance = 'SELECT stock_quantity FROM products WHERE item_id = ?'
+    connection.query(inventoryBalance, itemID, function(err, rows, fields) {
+    if (err) {
+    return console.error(err.message);
+    }
+    console.log(rows);
+    });
 };
 
 
@@ -57,5 +73,6 @@ function displayProducts() {
     connection.end(); 
 };
 
-getInfo();
+// displayProducts();
+getOrderInfo();
 
