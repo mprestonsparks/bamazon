@@ -18,15 +18,13 @@ function getOrderInfo() {
         for (var i in rows) {
             productIDs.push(rows[i].item_id);
         };
-        // console.log(itemIds);
         runInquirer(productIDs);
     });
-    
     // connection.end();
 };
 
 
-function runInquirer(productIDs) {
+function runInquirer(productIDs) {``
 inquirer
   .prompt([
     {
@@ -53,11 +51,21 @@ inquirer
 
 function checkInventoryBalance() {
     var inventoryBalance = 'SELECT stock_quantity FROM products WHERE item_id = ?'
-    connection.query(inventoryBalance, itemID, function(err, rows, fields) {
+    connection.query(inventoryBalance, itemID, function(err, res, fields) {
     if (err) {
     return console.error(err.message);
+    } else {
+      var orderSize = 4;
+      var currentInventory = res[0].stock_quantity;
+      if (orderSize > currentInventory) {
+        console.log("Insufficient inventory!");
+        
+      } else {
+        console.log("Order placed!");
+        updateInventoryBalance(orderSize);
+        calcOrderCost(orderSize);
+      }
     }
-    console.log(rows);
     });
 };
 
@@ -72,6 +80,35 @@ function displayProducts() {
     });
     connection.end(); 
 };
+
+
+function updateInventoryBalance(orderSize) {
+    console.log("called updateInventory");
+    console.log("itemID...",itemID);
+    console.log('currentInventory...',inventoryBalance);
+
+    
+    var currenInventory = 'SELECT stock_quantity FROM products WHERE item_id = ?'
+    // ** Set value1 on next line equal to currentInventory minus orderSize
+    var query = 'UPDATE products SET stock_quantity = value1 WHERE item_id = ?'
+    connection.query(query, itemID, function(err, res, fields) {
+      if (err) {
+        return console.log(err.message);
+      } else {
+
+      // CODE GOES HERE
+
+
+
+      };
+    });
+}
+
+
+function calcOrderCost(orderSize) {
+    console.log("called calcOrderCost");
+};
+
 
 // displayProducts();
 getOrderInfo();
