@@ -24,7 +24,6 @@ function getInfo() {
     connection.end();
 };
 
-getInfo();
 // console.log(itemIds.length);
 
 
@@ -57,3 +56,6 @@ function displayProducts() {
     });
     connection.end(); 
 };
+
+getInfo();
+
