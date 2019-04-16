@@ -43,7 +43,7 @@ inquirer
 ])
 .then((answers) => {
     itemID = answers.item_IDs;
-    orderQuantity = parseInt(answers.order_quantity);
+    orderQuantity = answers.order_quantity;
     console.log("Selected ItemID: " + itemID);
     console.log("Quantity Ordered: " + orderQuantity);
     checkInventoryBalance();
