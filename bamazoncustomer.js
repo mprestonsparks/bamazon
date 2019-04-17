@@ -9,27 +9,32 @@ let connection = mysql.createConnection({
 });
 
 
-function getOrderInfo() {
+function run() {
     connection.connect();
      var queryString = 'SELECT * FROM products';
-     connection.query(queryString, function(err, rows, fields) {
+     connection.query(queryString, function(err, res, fields) {
         if (err) throw err;
-        productIDs = [];
-        for (var i in rows) {
-            productIDs.push(rows[i].item_id);
-        };
-        runInquirer(productIDs);
+        for (i=0; i<res.length; i++) {
+          console.log(
+            "Item ID: " + res[i].item_id + "\n" +
+            "Product: " + res[i].product_name + "\n" + 
+            "Department: " + res[i].department_name + "\n" +
+            "Price: " + res[i].sale_price + "\n");
+          console.log("-------------------------");
+        }
+        runInquirer(res);
     });
-    // connection.end();
 };
 
 
-function runInquirer(productIDs) {``
+function runInquirer(products) {``
 inquirer
   .prompt([
     {
         type: "list",
-        choices: productIDs,
+        choices: products.map(function(val) {
+          return val.item_id;
+        }),
         name: "item_IDs",
         message: "Select an ItemID..."
     },
@@ -41,68 +46,47 @@ inquirer
 ])
 .then((answers) => {
     itemID = answers.item_IDs;
-    orderQuantity = answers.order_quantity;
+    orderQuantity = parseInt(answers.order_quantity);
     console.log("Selected ItemID: " + itemID);
     console.log("Quantity Ordered: " + orderQuantity);
-    checkInventoryBalance();
+    var product = products.filter(function(val) {
+      return val.item_id == itemID;
+    })
+    executeOrder(product[0], orderQuantity);
   });
 };
 
 
-function checkInventoryBalance() {
-    var inventoryBalance = 'SELECT stock_quantity FROM products WHERE item_id = ?'
-    connection.query(inventoryBalance, itemID, function(err, res, fields) {
-    if (err) {
-    return console.error(err.message);
-    } else {
-      var orderSize = 4;
-      var currentInventory = res[0].stock_quantity;
-      if (orderSize > currentInventory) {
+function executeOrder(product, orderQuantity) {
+      var currentInventory = product['stock_quantity'];
+      if (orderQuantity > currentInventory) {
         console.log("Insufficient inventory!");
-        
+        run();
       } else {
         console.log("Order placed!");
-        updateInventoryBalance(orderSize);
-        calcOrderCost(orderSize);
-      }
+        updateInventoryBalance(product, orderQuantity);
+        calcOrderCost(parseInt(product.sale_price), orderQuantity);
+      };
     }
-    });
-};
+   
 
-
-function displayProducts() {
-    let sql = `SELECT products.item_id, products.product_name, products.sale_price FROM products`;
-    connection.query(sql, (error, results) => {
-      if (error) {
-        return console.error(error.message);
-      }
-      console.log(results);
-    });
-    connection.end(); 
-};
-
-
-function updateInventoryBalance(orderSize) {
-    console.log("called updateInventory");
-    console.log("itemID...",itemID);
-    // *** PASS IN CURRENT INVENTORY
-    var currentInventory = 10;
-    var query = 'UPDATE products SET stock_quantity = ? WHERE item_id = ?'
-    newInventory = currentInventory - orderSize;
-    connection.query(query, [newInventory, itemID], function(err, res, fields) {
-      if (err) {
-        return console.log(err.message);
-      } 
-      console.log(res);
-    });
+function updateInventoryBalance(product, orderQuantity) {
+  var currentInventory = product.stock_quantity;
+  var newInventory = parseInt(currentInventory - orderQuantity);
+  var query = `UPDATE products SET stock_quantity = ? WHERE item_id = ?`;
+  var c = connection.query(query, [newInventory, itemID], function(err, res, fields) {
+    if (err) {
+      return console.log(err.message);
+    } 
+  });
 }
 
 
-function calcOrderCost(orderSize) {
-    console.log("called calcOrderCost");
+function calcOrderCost(price, orderQuantity) {
+      var orderCost = price * orderQuantity;
+      console.log("Total Cost: " + orderCost);
 };
 
 
-// displayProducts();
-getOrderInfo();
+run();
 
