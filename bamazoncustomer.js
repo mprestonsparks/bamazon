@@ -85,22 +85,15 @@ function displayProducts() {
 function updateInventoryBalance(orderSize) {
     console.log("called updateInventory");
     console.log("itemID...",itemID);
-    console.log('currentInventory...',inventoryBalance);
-
-    
-    var currenInventory = 'SELECT stock_quantity FROM products WHERE item_id = ?'
-    // ** Set value1 on next line equal to currentInventory minus orderSize
-    var query = 'UPDATE products SET stock_quantity = value1 WHERE item_id = ?'
-    connection.query(query, itemID, function(err, res, fields) {
+    // *** PASS IN CURRENT INVENTORY
+    var currentInventory = 10;
+    var query = 'UPDATE products SET stock_quantity = ? WHERE item_id = ?'
+    newInventory = currentInventory - orderSize;
+    connection.query(query, [newInventory, itemID], function(err, res, fields) {
       if (err) {
         return console.log(err.message);
-      } else {
-
-      // CODE GOES HERE
-
-
-
-      };
+      } 
+      console.log(res);
     });
 }
 
